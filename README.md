@@ -1,6 +1,6 @@
-# Identification-of-ideotypes
+# Identification-of-ideotypes
 
-Supporting code associated with *"Bayesian optimisation over trait-relationship space for the quantitative identification of crop ideotypes in Brassica"*, with example input/output data.
+Supporting code associated with *"Bayesian optimisation over trait-relationship space for the quantitative identification of crop ideotypes in Brassica"*, with example input/output data. Scripts are provided to document the modelling carried out.
 
 ### data preprocessing
 - **impute_data.R**: impute values for missing datapoints.
