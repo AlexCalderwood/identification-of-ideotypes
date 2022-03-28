@@ -1,27 +1,36 @@
 # Identification-of-ideotypes
 
-Supporting code associated with *"Bayesian optimisation over trait-relationship space for the quantitative identification of crop ideotypes in Brassica"*, with example input/output data. Scripts are provided to document the modelling carried out.
+Supporting code associated with *"Bayesian optimisation over trait-relationship space for the quantitative identification of crop ideotypes in Brassica"*, with example input/output data. The purpose of the repo is to document the data processing & modelling carried out.
 
 ### data preprocessing
 - **impute_data.R**: impute values for missing datapoints.
 
-	- *input*: `/data/final_data_normed_cleaned.rds` - normalised data for all accessions. Transformations which have been already applied to normalise the data are shown in supplemental table 2.
+	- *input*: `/data/final_data_normed_cleaned.rds` - data table of normalised data for all accessions. Transformations which have been already applied to normalise the data are shown in supplemental table 2.
 	- *output*: `/data/final_data_normed_cleaned_imputed.rds` - missing values in input have been imputed using the **`mice_3.11.0`** R package.
 
 
 ### identification of trait relationship structure
-- **id_trait_structure.R**: Identification of trait-trait relationship structure
-directed acyclic graph (DAG).
-	supporting script files: id_trait_structure_functions.R
-	input: final_data_normed_cleaned_imputed.rds
-	output:
-		trait_structure_output/data/
-			bnlearn_data.rds : data for spring ecotype accessions only. Used for learning model structures
-			bnlearn_results.rds : includes identified model structure for each of the k-fold models identified by bnlearn.
-		trait_structure_output/graphs/
-			trait.value_vs_predictions.pdf : plots of predicted values vs observed values for withheld data for each of the k-fold models.
-			k-fold_DAGs.pdf : DAGs showing each of the k-fold models identified.
-			avg_DAG_strength.pdf : consensus DAG identified based on connections seen frequently & strongly in the k-fold identified structures.
+- **id_trait_structure.R**: Identification of trait-trait relationship structure directed acyclic graph (DAG). Uses **`bnlearn_4.5`** R package to search DAG structure space to find linear regression model structures (Gaussian Bayesian Networks) which best explain the data according to the BIC criterion. A separate model is estimated for each of 5-fold data splits, and an average consensus model computed from these.
+
+	- *supporting script files*: `id_trait_structure_functions.R`
+	- *input*:
+		- `/data/final_data_normed_cleaned_imputed.rds` - data table of phenotype data used for model fitting.
+		- `/data/final_traits_blacklist.txt` - specifies a hierarchy of traits such that traits on lower lines cannot be parents of traits on higher lines.
+		- `/data/final_traits_whitelist.txt` - trait-trait links which must be included in any considered model.
+	- *output*:
+		`trait_structure_output/data/`
+		- `bnlearn_data.rds` : filtered phenotype data for spring ecotype varieties only. Which was used to learn spring OSR model structures.
+		- `bnlearn_results.rds` : list of results relating model structures inferred for spring OSR. Includes identified model structure for each of the k-fold models identified by bnlearn.
+			- `results$str.df.list[[i]]` - dataframe of edges and edge consistency found during bootstrap in ith fold. 6th element is average over all 5 folds, by weighted sum of edge weights in each, where weight is proportional to BIC score.
+			- `results$avg.dag.list[[i]]` - averaged network from bootstrapping in ith fold. 6th element is average over all 5 folds, by weighted sum of edge weights in each, where weight is proportional to BIC score.
+			- `results$scores[[i]]` - BIC scores calculated for each of the averaged networks
+			- `results$model.strings[[i]]` - averaged DAG model structure in string format, for use in building Stan model structure.
+			- `results$xval.df` - dataframe of predicted phenotype values for witheld data using ith averaged network model.
+
+		`trait_structure_output/graphs/`
+		- `trait.value_vs_predictions.pdf` : plots of predicted values vs observed values for withheld data for each of the k-fold models (plot of `results$xval.df`).
+		- `k-fold_DAGs.pdf` : DAGs showing each of the k-fold `results$avg.dag.list` models identified.
+		- `avg_DAG_strength.pdf` : consensus DAG identified from `results$avg.dag.list` based on connections seen frequently & strongly in the k-fold identified structures. (this DAG corresponds to the 6th element of `results$avg.dag.list`).
 
 
 ### Predicting the yield consequence of modifying traits
