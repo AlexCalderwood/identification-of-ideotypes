@@ -1,0 +1,11 @@
+height,num2aryBranch
+numFlowers,timeToFlower
+ovaryLen,styleLen,ovuleNum,ovuleArea,ovuleACov,gynLen
+percAbortedMain,numPodsMain,podLen,beakLen
+numPods2ary,percAborted2ary,timeToMature
+tenPodNumber
+tenPodArea,tenPodWeight
+totSeedArea,totSeedNum,seedACov
+totCompactness,tenPodCompactness
+TGW
+oilContent,totSeedW

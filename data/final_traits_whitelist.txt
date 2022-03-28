@@ -1,0 +1,10 @@
+from  to
+tenPodWeight totSeedW
+numPodsMain totSeedW
+numPods2ary totSeedW
+percAbortedMain numPodsMain
+percAborted2ary numPods2ary
+styleLen  gynLen
+ovaryLen  gynLen
+ovuleNum  tenPodNumber
+totSeedW  oilContent

@@ -4,8 +4,9 @@ Supporting code associated with *"Bayesian optimisation over trait-relationship 
 
 ### data preprocessing
 - **impute_data.R**: impute values for missing datapoints.
-	*input*: data/final_data_normed_cleaned.rds - normalised data for all accessions. Transformations which have been already applied to normalise the data shown in supplemental table 2.
-	*output*: data/final_data_normed_cleaned_imputed.rds - missing values in input have been imputed.
+
+	- *input*: `/data/final_data_normed_cleaned.rds` - normalised data for all accessions. Transformations which have been already applied to normalise the data are shown in supplemental table 2.
+	- *output*: `/data/final_data_normed_cleaned_imputed.rds` - missing values in input have been imputed using the **`mice_3.11.0`** R package.
 
 
 ### identification of trait relationship structure
