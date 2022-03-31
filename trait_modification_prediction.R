@@ -9,13 +9,6 @@ options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 source('trait_modification_functions.R')
 
-#library(GGally) # ggpairs plot
-#library(bnlearn)
-#library('Rgraphviz') # allows plot() graphNEL objects
-#library('rbmn') # for the conditional distributions stuff / dependencies
-#source('stan_functions.R') # functions for making and plotting Stan models and data
-
-
 # set RNG 
 set.seed(123)
 
@@ -65,7 +58,7 @@ D.data.sc.cultivar$rep <- D.data2.cultivars$rep
 
 ##### NULL MODEL -----
 ##' Will need NULL predictions for any trait which is not predicted from the other traits in a particular 
-##' k-fold model (ie has no parent nodes), but which are predicted (ie has parents) in at least one other. 
+##' k-fold model (ie has no parent nodes), but which are predicted (ie has parents) in at least one other model. 
 ##' This is so that can average predictions over the k-fold models. 
 ##' 
 ##' In the models in which they don't have parents, hese NULL prediction traits are not predicted to vary 
@@ -300,13 +293,6 @@ avg_pred_vs_measured_dt <- convert_to_data_and_predictions_dt(b.unscaled.fit.ext
                                                               all.pred.traits, 
                                                               b.D.data2.cultivars) 
 saveRDS(avg_pred_vs_measured_dt, file=paste0(curr.pert.plt.dir, 'avg_pred_vs_measured.data_back.rds'))
-
-# stan_data4plot <- df2stan_data(subset(b.D.data2.cultivars, select=data.columns)) # use the original unscaled data to make this.
-# p <- make_pairwise_posterior_plots_compact(b.unscaled.fit.extracted, stan_data4plot, pred.traits, k_model)
-# ggsave(paste0(curr.pert.plt.dir, 'pairwise_predictions_back.png'), p, width=40, height=40)
-# p <- make_pairwise_posterior_plots_real_x_compact(b.unscaled.fit.extracted, stan_data4plot, pred.traits, k_model) # WORKS
-# ggsave(paste0(curr.pert.plt.dir, 'pairwise_predictions_experimental_x_back.png'), p, width=40, height=40)
-# gc()
 
 # plot predicted effects of trait perturbations on yield (with backtransformed scales)
 if (length(all.pert.pred.traits) > 0) {

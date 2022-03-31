@@ -43,24 +43,42 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 
 
 ### Predicting the yield consequence of modifying traits
-- **trait_modification_prediction.R**
+- **trait_modification_prediction.R** :
+    - Takes the model structures inferred by **id_trait_structure.R**, uses Gaussian Processes (GP) to model the potentially non-linear relationships between the connected nodes, and predict the effects of perturbing each yield trait.
+    - MCMC sampling is carried out using Stan. This script parses model structures encoded as strings in `bnlearn$model.strings` to produce `.stan` files describing the GP modelled relationships between each node and its parent traits. It also calls Stan to compile and run no-U-turn MCMC sampling on these models.
+    <br>
 	- *supporting script files*:
-		- `trait_modification_functions.R` - R functions used
-		- `GP_ARD_functions.stan` - Stan functions defining kernel used for GP prior.
+		- `trait_modification_functions.R` : helper R functions
+		- `GP_ARD_functions.stan` : Stan functions used to define the kernel used for the GP prior.
 
 	- *input*:
-		- `id_trait_structure_output/data/bnlearn_data.rds`
-		- `id_trait_structure_output/data/bnlearn_results.rds`
-		- (if running with **TESTING=TRUE**):
-		`data/example_trait_modification_data/ki/height_fitted.rds` - precomputed predictions for trait values when height is modified).
+		- `id_trait_structure_output/data/bnlearn_data.rds` : generated output of  **id_trait_structure.R** (described above).
+		- `id_trait_structure_output/data/bnlearn_results.rds` : generated output of  **id_trait_structure.R** (described above).
+		- (if running with `TESTING=TRUE`:
+		`data/example_trait_modification_data/k{i}/height_fitted.rds` : These precomputed predictions (for other trait values when "height" is modified), are normally generated as output of this script. They are loaded for convenience if "testing", as they are otherwise slow to compute).
 
 	- *output*:
-		`trait_modification_output/model_files/`
-		- `{TRAIT}_NULL.stan` - Stan source code for model to sample   from normal distribution with observed mean and sd.
-		- `{TRAIT}_NULL.rds` - compiled rStan model of the above
-		- `{TRAIT}_NULL_fitted.rds` - sampled values from the above model. NB this file >100Mb, and so is not included in the github, but can be generated from the provided scripts and input data.
-		- `k{i}-fold/{TRAIT}/{TRAIT}_opt.stan` - stan source code for model to use for max likelihood hyperparameter estimation, using perturbed trait TRAIT, and k-fold model structure i.
-		- `k{i}-fold/{TRAIT}/{TRAIT}_opt.rds` - rstan model for the above
+		`trait_modification_output/model_files/`<br>
+    `_NULL` files : traits without parent nodes in at least one, but not all of the k-fold DAGs are not modelled by a GP in models where it has no parents. Instead they are modelled as following a normal distribution, estimated from the data. These traits are called _NULL traits. Their sampling is required so that the predicted response to other perturbations for these traits can be averaged over all five-fold estimated DAG structures, not just those where they have parents.
+		- `{TRAIT}_NULL.stan` : Stan source code for model used to sample from normal distribution of  all the _NULL traits with empirical mean and sd. {TRAIT} is the perturbed trait, not the name of the _NULL trait.
+		- `{TRAIT}_NULL.rds` : compiled rStan model of the above `.stan` file
+		- `{TRAIT}_NULL_fitted.rds` : sampled values for _NULL traits from the above model. NB that this file >100Mb, and so is not included in the github, but can be generated from the provided scripts and input data.
+    <br>
+
+      `_opt` files : Full Bayesian inference of the GP hyperparameters $\alpha$, $\rho$ & $\sigma$, by sampling at the same time as rest of the GP model is too computationally demanding. Instead here they are estimated by Regularised Maximum Marginal Likelihood, and point estimates are passed as parameters the rest of the model (as described [here](https://betanalpha.github.io/assets/case_studies/gp_part2/part2.html#3_regularized_maximum_marginal_likelihood)). Priors for the hyperparameters for each trait ($t$) are:
+
+      $\alpha_{t} \sim Normal(0,1) $
+      $\rho_{t} \sim InvGamma(5,5)$
+      $\sigma_{t} \sim HalfNormal(0,1)$
+      <br>
+
+		 - `k{i}-fold/{TRAIT}/{TRAIT}_opt.stan` : stan source code for model used for maximum likelihood hyperparameter estimation. For use with perturbed trait {TRAIT}, and k-fold model structure {i}.
+		  - `k{i}-fold/{TRAIT}/{TRAIT}_opt.rds` : compiled rstan model for the above.
+      <br>
+
+      GOT UP TO HERE
+
+      `_pred` files.
 		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.stan` - stan source code for model to make predictions for values of other traits, when trait TRAIT is modified.
 		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.rds` - rstan model for the above.
 		- `/k{i}-fold/{TRAIT}/{TRAIT}_fitted.rds` - sampled values from the posterior defined in the above model. If running with TESTING=TRUE, this is just copied from the input `/data/example_trait_modification_data/k{i}/height_fitted.rds`.
