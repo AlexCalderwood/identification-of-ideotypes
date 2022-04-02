@@ -5,7 +5,7 @@ Supporting code associated with *"Bayesian optimisation over trait-relationship 
 Each analysis stage is carried out by a single **R script**, with *supporting scripts*, *input files*, and *output files* as specified below.
 
 
-### data preprocessing
+### Data preprocessing
 - **impute_data.R**: impute values for missing datapoints.
 
 	- *input*:
@@ -15,7 +15,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		- `/data/final_data_normed_cleaned_imputed.rds` - missing values in input have been imputed using the **`mice_3.11.0`** R package.
 
 
-### identification of trait relationship structure
+### Identification of trait relationship structure
 - **id_trait_structure.R**: Identification of trait-trait relationship structure directed acyclic graph (DAG). Uses **`bnlearn_4.5`** R package to search DAG structure space to find linear regression model structures (Gaussian Bayesian Networks) which best explain the data according to the BIC criterion. A separate model is estimated for each of 5-fold data splits, and an average consensus model computed from these.
 
 	- *supporting script files*:
@@ -45,7 +45,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 ### Predicting the yield consequence of modifying traits
 - **trait_modification_prediction.R** :
     - Takes the model structures inferred by **id_trait_structure.R**, uses Gaussian Processes (GP) to model the potentially non-linear relationships between the connected nodes, and predict the effects of perturbing each yield trait.
-    - MCMC sampling is carried out using Stan. This script parses model structures encoded as strings in `bnlearn$model.strings` to produce `.stan` files describing the GP modelled relationships between each node and its parent traits. It also calls Stan to compile and run no-U-turn MCMC sampling on these models.
+    - MCMC sampling is carried out using Stan. This script parses model structures inferred by `id_trait_structure.R`, encoded as strings in `bnlearn$model.strings` to produce `.stan` files describing the GP modelled relationships between each node and its parent traits. It calls Stan to compile and run no-U-turn MCMC sampling on these models, to learn the potentially non-linear relationships between traits, and predict trait values upon perturbation of each trait. Here example results are provided for the perturbed trait "height" ( {TRAIT} ).
     <br>
 	- *supporting script files*:
 		- `trait_modification_functions.R` : helper R functions
@@ -76,48 +76,50 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		  - `k{i}-fold/{TRAIT}/{TRAIT}_opt.rds` : compiled rstan model for the above.
       <br>
 
-      GOT UP TO HERE
+
 
       `_pred` files.
-		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.stan` - stan source code for model to make predictions for values of other traits, when trait TRAIT is modified.
-		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.rds` - rstan model for the above.
-		- `/k{i}-fold/{TRAIT}/{TRAIT}_fitted.rds` - sampled values from the posterior defined in the above model. If running with TESTING=TRUE, this is just copied from the input `/data/example_trait_modification_data/k{i}/height_fitted.rds`.
+		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.stan` : stan source code for model used to make predictions for values of other traits, when trait {TRAIT} is modified.
+		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.rds` : compiled rstan model for the above.
+		- `/k{i}-fold/{TRAIT}/{TRAIT}_fitted.rds` : data table of sampled values from the posterior defined in the above model. If running with `TESTING=TRUE`, this is just copied from the input `/data/example_trait_modification_data/k{i}/height_fitted.rds`file.
+    <br>
 
-		`trait_modification_output/graphs/`
-		- `{TRAIT}_k-avg_predicted_perturbation_effect.pdf` - plot of CIs of trait values when perturbed trait is fixed to x-axis values.
-		- `{TRAIT}_k-avg_predicted_perturbation_effect_back.pdf` - as above, after data is back transformed to undo transformations to make more normally distributed.
-		- `k{i}-fold/{TRAIT}/`
-			- `optimal_hyperparameters.csv` - values of alpha, sigma, rho hyper parameters estimated by regularised maximum likelihood.
-			- `fit_summary.csv` - all values sampled from posterior (same data as `TRAIT_fitted.rds`, but in .csv format).
-		- `k-averaged/{TRAIT}/`
-			- `avg_pred_vs_measured.pdf` - plot of observed values vs mean predictions from sampled posterior.
-			- `avg_pred_vs_meaured.data.rds` - data used in making above plot
-			- `avg_pred_vs_measured_back.pdf` - plot of observed values vs mean predictions from sampled posterior, after normalisation transformation back transformed.
-			- `avg_pred_vs_meaured.data_back.rds` - the data used in making the above plot.
+      `trait_modification_output/graphs/`
+    <br>
+		- `{TRAIT}_k-avg_predicted_perturbation_effect.pdf` : plots of median and 10% confidence intervals for predicted trait values when perturbed trait {TRAIT} is set to the plotted x-axis values. Results have been averaged over the five inferred DAG structures.
+		- `{TRAIT}_k-avg_predicted_perturbation_effect_back.pdf` : as above, after data is back transformed to undo transformations shown in supplemental table 2 which were applied to make traits more normally distributed.
+		- `k{i}-fold/{TRAIT}/` : results for DAG model structure $i$, when {TRAIT} is perturbed.
+			- `optimal_hyperparameters.csv` : optimal values of $\alpha$, $\sigma$, $\rho$ hyper parameters estimated by regularised maximum likelihood.
+			- `fit_summary.csv` : all values sampled from posterior trait value predictions (is the same data as `TRAIT_fitted.rds`, but in .csv format).
+		- `k-averaged/{TRAIT}/` : results averaged over all five DAG structures.
+			- `avg_pred_vs_measured.pdf` : plot of observed trait values vs mean predictions from sampled posterior without trait perturbation.
+			- `avg_pred_vs_meaured.data.rds` : data table used for making above plot.
+			- `avg_pred_vs_measured_back.pdf` : plot of observed values vs mean predictions from sampled posterior without trait perturbation, after normalisation transformation (as shown in supplemental table 2) back transformed to show original trait measurements..
+			- `avg_pred_vs_meaured.data_back.rds` : the data used in making the above plot.
 
 
 ### Bayesian optimisation for ideotype identification
-- **bayesian_optimisation.R**
+- **bayesian_optimisation.R** : specify a model in which seed weight is a function of its parent traits as was inferred in **Identification of trait relationship structure** as the average over the k-fold DAGs. As in **Predicting the yield consequence of modifying traits**, the ARD kernel is used, and hyperparameters $\alpha$, $\rho$, $\sigma$ are inferred by regularised maximum likelihood with priors as shown above. Ideotypes are identified by iteratively identifying the next optimal point in trait space which maximise the Expected Improvement (EI) in seed yield given the fitted GP model. At each iteration, previously identified optimal points are incorporated in the dataset following the "constant liar" heuristic, where the experimentally observed maximum yield is the substituted value. Correlations between the parent traits are accounted for by using the principle components of the trait space as input to the GP model.
 	- *supporting script files*:
-		- `BO_functions.R` - functions used in bayesian_optimisation.R
-		- `BO_plot_results.R` - script to plot q-EI points, and observations
+		- `BO_functions.R` : utility functions used in `bayesian_optimisation.R`
+		- `BO_plot_results.R` : script to plot the output of `bayesian_optimisation.R`, which is the next $q$ proposed optimal ideotype  points experimental observations
 	- *input*:
 		`data/BO_data/`
-		- `pred_model.stan` - stan source code used to sample posterior - prediction for next proposed q-point, conditioned on observations and hyperparamteres.
-		- `pred_model.rds` - rstan of the above model.
-		- `spring_trait_data.rds` - data for spring accessions only (as produced by id_trait_structure.R, renamed bnlearn_data.rds).
-		- `winter_trait_data.rds` - same as above, but winter OSR accessions.
+		- `pred_model.stan` : stan source code for GP model, specifying that total seed weight is a GP function of the other traits passed in by `bayesian_optimisation.R`.
+		- `pred_model.rds` : the above model compiled by rstan.
+		- `spring_trait_data.rds` : experimental trait data for spring accessions only (produced by `id_trait_structure.R` as `bnlearn_data.rds`).
+		- `winter_trait_data.rds` : same as `spring_trait_data.rds`, but for winter OSR accessions.
 	- *output*:
 		`BO_output/`
 		- `{ECOTYPE}_hyperparam_model/`
-			- `opt_model.stan` - stan source for model used to infer max likelihood values for GP prior hyperparams
-			-	`opt_model.rds` - rstan compiled model of the above
-			-	`opt_hyperparams.csv` - optimal hyperparameter values
-		- `{ECOTYPE}_PCA_{SUFFIX}.csv` - summary table of variance explained by principle components.
-		- `{ECOTYPE}_stan.data_{SUFFIX}.RDS` - the data used to the q-values for exploration
-		- `{ECOTYPE}_q.values_{SUFFIX}.RDS` - the next q identified values for exploration.
+			- `opt_model.stan` : stan source for model used to infer max likelihood values for GP prior hyperparameters $\alpha$, $\rho$, $\sigma$.
+			-	`opt_model.rds` : rstan compiled model of the above
+			-	`opt_hyperparams.csv` : optimal hyperparameter values identified by regularised maximum likelihood.
+		- `{ECOTYPE}_PCA_{SUFFIX}.csv` : summary table of the variance explained by principle components. Used to select the number of PCs for use.
+		- `{ECOTYPE}_stan.data_{SUFFIX}.RDS` : the data used for model fitting
+		- `{ECOTYPE}_q.values_{SUFFIX}.RDS` : the next $q$ proposed ideotype values as points in trait space.
 
 ### Simulation of causal SNP identification
-- **simSNP_inference.R**
+- **simSNP_inference.R** : Simulates linear gene-trait, and trait-trait relationships shown in Supplemental figure 6a. Infers statistical associations between simulated SNPs and traits as the strength of the trait-trait relationship ($\gamma$), and gaussian noise in the trait values is varied (to generate results shown in supplemental figure 6b).
 	- *supporting script files*:
-	  - `simSNP_inference_functions.R`
+	  - `simSNP_inference_functions.R` : utility functions for `simSNP_inference.R`.
