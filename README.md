@@ -58,13 +58,12 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		- (if running with `TESTING=TRUE`:
 		`data/example_trait_modification_data/k{i}/height_fitted.rds` : These precomputed predictions (for other trait values when "height" is modified), are normally generated as output of this script. They are loaded for convenience if "testing", as they are otherwise slow to compute).
 
-	- *output*:
+	- *output*:<br>
 		`trait_modification_output/model_files/`<br>
     `_NULL` files : traits without parent nodes in at least one, but not all of the k-fold DAGs are not modelled by a GP in models where it has no parents. Instead they are modelled as following a normal distribution, estimated from the data. These traits are called _NULL traits. Their sampling is required so that the predicted response to other perturbations for these traits can be averaged over all five-fold estimated DAG structures, not just those where they have parents.
 		- `{TRAIT}_NULL.stan` : Stan source code for model used to sample from normal distribution of  all the _NULL traits with empirical mean and sd. {TRAIT} is the perturbed trait, not the name of the _NULL trait.
 		- `{TRAIT}_NULL.rds` : compiled rStan model of the above `.stan` file
-		- `{TRAIT}_NULL_fitted.rds` : sampled values for _NULL traits from the above model. NB that this file >100Mb, and so is not included in the github, but can be generated from the provided scripts and input data.
-    <br>
+		- `{TRAIT}_NULL_fitted.rds` : sampled values for _NULL traits from the above model. NB that this file >100Mb, and so is not included in the github, but can be generated from the provided scripts and input data.<br><br>
 
     `_opt` files : Full Bayesian inference of the GP hyperparameters $\alpha$, $\rho$ & $\sigma$, by sampling at the same time as rest of the GP model is too computationally demanding. Instead here they are estimated by Regularised Maximum Marginal Likelihood, and point estimates are passed as parameters the rest of the model (as described [here](https://betanalpha.github.io/assets/case_studies/gp_part2/part2.html#3_regularized_maximum_marginal_likelihood)). Priors for the hyperparameters for each trait ($t$) are:
       $\alpha_{t} \sim Normal(0,1) $
