@@ -17,8 +17,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 
 
 ### Identification of trait relationship structure
-- **id_trait_structure.R**: Identification of trait-trait relationship structure directed acyclic graph (DAG). Uses **`bnlearn_4.5`** R package to search DAG structure space to find linear regression model structures (Gaussian Bayesian Networks) which best explain the data according to the BIC criterion. A separate model is estimated for each of 5-fold data splits, and an average consensus model computed from these.
-
+- **id_trait_structure.R**: Identification of trait-trait relationship structure directed acyclic graph (DAG). Uses **`bnlearn_4.5`** R package to search DAG structure space to find linear regression model structures (Gaussian Bayesian Networks) which best explain the data according to the BIC criterion. A separate model is estimated for each of 5-fold data splits, and an average consensus model computed from these.<br><br>
 	- *supporting script files*:
 	  - `id_trait_structure_functions.R`
 
@@ -49,7 +48,6 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 - **trait_modification_prediction.R** :
     - Takes the model structures inferred by **id_trait_structure.R**, uses Gaussian Processes (GP) to model the potentially non-linear relationships between the connected nodes, and predict the effects of perturbing each yield trait.
     - MCMC sampling is carried out using Stan. This script parses model structures inferred by `id_trait_structure.R`, encoded as strings in `bnlearn$model.strings` to produce `.stan` files describing the GP modelled relationships between each node and its parent traits. It calls Stan to compile and run no-U-turn MCMC sampling on these models, to learn the potentially non-linear relationships between traits, and predict trait values upon perturbation of each trait. Here example results are provided for the perturbed trait "height" (TRAIT).<br><br>
-
 	- *supporting script files*:
 		- `trait_modification_functions.R` : helper R functions
 		- `GP_ARD_functions.stan` : Stan functions used to define the kernel used for the GP prior.
