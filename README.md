@@ -27,6 +27,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		- `/data/final_traits_whitelist.txt` - trait-trait links which must be included in any considered model.
 
 	- *output*:
+
 		`trait_structure_output/data/`
 		- `bnlearn_data.rds` : filtered phenotype data for spring ecotype varieties only. Which was used to learn spring OSR model structures.
 		- `bnlearn_results.rds` : list of results relating model structures inferred for spring OSR. Includes identified model structure for each of the k-fold models identified by bnlearn.
@@ -45,8 +46,8 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 ### Predicting the yield consequence of modifying traits
 - **trait_modification_prediction.R** :
     - Takes the model structures inferred by **id_trait_structure.R**, uses Gaussian Processes (GP) to model the potentially non-linear relationships between the connected nodes, and predict the effects of perturbing each yield trait.
-    - MCMC sampling is carried out using Stan. This script parses model structures inferred by `id_trait_structure.R`, encoded as strings in `bnlearn$model.strings` to produce `.stan` files describing the GP modelled relationships between each node and its parent traits. It calls Stan to compile and run no-U-turn MCMC sampling on these models, to learn the potentially non-linear relationships between traits, and predict trait values upon perturbation of each trait. Here example results are provided for the perturbed trait "height" ( {TRAIT} ).
-    <br>
+    - MCMC sampling is carried out using Stan. This script parses model structures inferred by `id_trait_structure.R`, encoded as strings in `bnlearn$model.strings` to produce `.stan` files describing the GP modelled relationships between each node and its parent traits. It calls Stan to compile and run no-U-turn MCMC sampling on these models, to learn the potentially non-linear relationships between traits, and predict trait values upon perturbation of each trait. Here example results are provided for the perturbed trait "height" (TRAIT).<br><br>
+
 	- *supporting script files*:
 		- `trait_modification_functions.R` : helper R functions
 		- `GP_ARD_functions.stan` : Stan functions used to define the kernel used for the GP prior.
@@ -65,13 +66,11 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		- `{TRAIT}_NULL_fitted.rds` : sampled values for _NULL traits from the above model. NB that this file >100Mb, and so is not included in the github, but can be generated from the provided scripts and input data.
     <br>
 
-      `_opt` files : Full Bayesian inference of the GP hyperparameters $\alpha$, $\rho$ & $\sigma$, by sampling at the same time as rest of the GP model is too computationally demanding. Instead here they are estimated by Regularised Maximum Marginal Likelihood, and point estimates are passed as parameters the rest of the model (as described [here](https://betanalpha.github.io/assets/case_studies/gp_part2/part2.html#3_regularized_maximum_marginal_likelihood)). Priors for the hyperparameters for each trait ($t$) are:
-
+    `_opt` files : Full Bayesian inference of the GP hyperparameters $\alpha$, $\rho$ & $\sigma$, by sampling at the same time as rest of the GP model is too computationally demanding. Instead here they are estimated by Regularised Maximum Marginal Likelihood, and point estimates are passed as parameters the rest of the model (as described [here](https://betanalpha.github.io/assets/case_studies/gp_part2/part2.html#3_regularized_maximum_marginal_likelihood)). Priors for the hyperparameters for each trait ($t$) are:
       $\alpha_{t} \sim Normal(0,1) $
       $\rho_{t} \sim InvGamma(5,5)$
       $\sigma_{t} \sim HalfNormal(0,1)$
       <br>
-
 		 - `k{i}-fold/{TRAIT}/{TRAIT}_opt.stan` : stan source code for model used for maximum likelihood hyperparameter estimation. For use with perturbed trait {TRAIT}, and k-fold model structure {i}.
 		  - `k{i}-fold/{TRAIT}/{TRAIT}_opt.rds` : compiled rstan model for the above.
       <br>
