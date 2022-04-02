@@ -3,7 +3,7 @@
 Supporting code associated with *"Bayesian optimisation over trait-relationship space for the quantitative identification of crop ideotypes in Brassica"*, with example input/output data. The purpose of the repo is to document the data processing & modelling carried out.
 
 Each analysis stage is carried out by a single **R script**, with *supporting scripts*, *input files*, and *output files* as specified below.
-
+<br><br><br>
 
 ### Data preprocessing
 - **impute_data.R**: impute values for missing datapoints.
@@ -13,6 +13,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 
 	- *output*:
 		- `/data/final_data_normed_cleaned_imputed.rds` - missing values in input have been imputed using the **`mice_3.11.0`** R package.
+    <br><br><br>
 
 
 ### Identification of trait relationship structure
@@ -41,6 +42,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		- `trait.value_vs_predictions.pdf` : plots of predicted values vs observed values for withheld data for each of the k-fold models (plot of `results$xval.df`).
 		- `k-fold_DAGs.pdf` : DAGs showing each of the k-fold `results$avg.dag.list` models identified.
 		- `avg_DAG_strength.pdf` : consensus DAG identified from `results$avg.dag.list` based on connections seen frequently & strongly in the k-fold identified structures. (this DAG corresponds to the 6th element of `results$avg.dag.list`).
+    <br><br><br>
 
 
 ### Predicting the yield consequence of modifying traits
@@ -91,6 +93,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 			- `avg_pred_vs_meaured.data.rds` : data table used for making above plot.
 			- `avg_pred_vs_measured_back.pdf` : plot of observed values vs mean predictions from sampled posterior without trait perturbation, after normalisation transformation (as shown in supplemental table 2) back transformed to show original trait measurements..
 			- `avg_pred_vs_meaured.data_back.rds` : the data used in making the above plot.
+      <br><br><br>
 
 
 ### Bayesian optimisation for ideotype identification
@@ -113,6 +116,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		- `{ECOTYPE}_PCA_{SUFFIX}.csv` : summary table of the variance explained by principle components. Used to select the number of PCs for use.
 		- `{ECOTYPE}_stan.data_{SUFFIX}.RDS` : the data used for model fitting
 		- `{ECOTYPE}_q.values_{SUFFIX}.RDS` : the next $q$ proposed ideotype values as points in trait space.
+    <br><br><br>
 
 ### Simulation of causal SNP identification
 - **simSNP_inference.R** : Simulates linear gene-trait, and trait-trait relationships shown in Supplemental figure 6a. Infers statistical associations between simulated SNPs and traits as the strength of the trait-trait relationship ($\gamma$), and gaussian noise in the trait values is varied (to generate results shown in supplemental figure 6b).
