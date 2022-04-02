@@ -67,8 +67,8 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		- `{TRAIT}_NULL.rds` : compiled rStan model of the above `.stan` file
 		- `{TRAIT}_NULL_fitted.rds` : sampled values for _NULL traits from the above model. NB that this file >100Mb, and so is not included in the github, but can be generated from the provided scripts and input data.<br>
 
-      `_opt` files : Full Bayesian inference of the GP hyperparameters $\alpha$, $\rho$ & $\sigma$, by sampling at the same time as rest of the GP model is too computationally demanding. Instead here they are estimated by Regularised Maximum Marginal Likelihood, and point estimates are passed as parameters the rest of the model (as described [here](https://betanalpha.github.io/assets/case_studies/gp_part2/part2.html#3_regularized_maximum_marginal_likelihood)). Priors for the hyperparameters for each trait ($t$) are:<br>
-      $\alpha_{t} \sim Normal(0,1)$<br>
+      `_opt` files : Full Bayesian inference of the GP hyperparameters &alpha;, &rho; & &sigma;, by sampling at the same time as rest of the GP model is too computationally demanding. Instead here they are estimated by Regularised Maximum Marginal Likelihood, and point estimates are passed as parameters the rest of the model (as described [here](https://betanalpha.github.io/assets/case_studies/gp_part2/part2.html#3_regularized_maximum_marginal_likelihood)). Priors for the hyperparameters for the parents of each trait ($t$) are:<br>
+      &alpha;<sub>t<\sub> \sim Normal(0,1)$<br>
       $\rho_{t} \sim InvGamma(5,5)$<br>
       $\sigma_{t} \sim HalfNormal(0,1)$<br>
 		 - `k{i}-fold/{TRAIT}/{TRAIT}_opt.stan` : stan source code for model used for maximum likelihood hyperparameter estimation. For use with perturbed trait {TRAIT}, and k-fold model structure {i}.
@@ -76,7 +76,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
       `_pred` files : Files associated with predicted trait values upon perturbation of a trait {TRAIT}.
 		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.stan` : stan source code for model used to make predictions for values of other traits, when trait {TRAIT} is modified.
 		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.rds` : compiled rstan model for the above.
-		- `/k{i}-fold/{TRAIT}/{TRAIT}_fitted.rds` : data table of sampled values from the posterior defined in the above model. If running with `TESTING=TRUE`, this is just copied from the input `/data/example_trait_modification_data/k{i}/height_fitted.rds`file.<br>
+		- `/k{i}-fold/{TRAIT}/{TRAIT}_fitted.rds` : data table of sampled values from the posterior defined in the above model. If running with `TESTING=TRUE`, this is just copied from the input `/data/example_trait_modification_data/k{i}/height_fitted.rds`file.<br><br>
 
       `trait_modification_output/graphs/`<br>
 		- `{TRAIT}_k-avg_predicted_perturbation_effect.pdf` : plots of median and 10% confidence intervals for predicted trait values when perturbed trait {TRAIT} is set to the plotted x-axis values. Results have been averaged over the five inferred DAG structures.
