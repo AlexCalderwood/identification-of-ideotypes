@@ -75,14 +75,12 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 
 
 
-      `_pred` files.
+      `_pred` files : Files associated with predicted trait values upon perturbation of a trait {TRAIT}.
 		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.stan` : stan source code for model used to make predictions for values of other traits, when trait {TRAIT} is modified.
 		- `/k{i}-fold/{TRAIT}/{TRAIT}_pred.rds` : compiled rstan model for the above.
-		- `/k{i}-fold/{TRAIT}/{TRAIT}_fitted.rds` : data table of sampled values from the posterior defined in the above model. If running with `TESTING=TRUE`, this is just copied from the input `/data/example_trait_modification_data/k{i}/height_fitted.rds`file.
-    <br>
+		- `/k{i}-fold/{TRAIT}/{TRAIT}_fitted.rds` : data table of sampled values from the posterior defined in the above model. If running with `TESTING=TRUE`, this is just copied from the input `/data/example_trait_modification_data/k{i}/height_fitted.rds`file.<br><br>
 
-      `trait_modification_output/graphs/`
-    <br>
+      `trait_modification_output/graphs/`<br>
 		- `{TRAIT}_k-avg_predicted_perturbation_effect.pdf` : plots of median and 10% confidence intervals for predicted trait values when perturbed trait {TRAIT} is set to the plotted x-axis values. Results have been averaged over the five inferred DAG structures.
 		- `{TRAIT}_k-avg_predicted_perturbation_effect_back.pdf` : as above, after data is back transformed to undo transformations shown in supplemental table 2 which were applied to make traits more normally distributed.
 		- `k{i}-fold/{TRAIT}/` : results for DAG model structure $i$, when {TRAIT} is perturbed.
