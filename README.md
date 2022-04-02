@@ -67,10 +67,10 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		- `{TRAIT}_NULL.rds` : compiled rStan model of the above `.stan` file
 		- `{TRAIT}_NULL_fitted.rds` : sampled values for _NULL traits from the above model. NB that this file >100Mb, and so is not included in the github, but can be generated from the provided scripts and input data.<br>
 
-      `_opt` files : Full Bayesian inference of the GP hyperparameters &alpha;, &rho; & &sigma;, by sampling at the same time as rest of the GP model is too computationally demanding. Instead here they are estimated by Regularised Maximum Marginal Likelihood, and point estimates are passed as parameters the rest of the model (as described [here](https://betanalpha.github.io/assets/case_studies/gp_part2/part2.html#3_regularized_maximum_marginal_likelihood)). Priors for the hyperparameters for the parents of each trait ($t$) are:<br>
-      * &alpha;<sub>t</sub> ~ Normal(0,1)*<br>
-      $\rho_{t} \sim InvGamma(5,5)$<br>
-      $\sigma_{t} \sim HalfNormal(0,1)$<br>
+      `_opt` files : Full Bayesian inference of the GP hyperparameters &alpha;, &rho; & &sigma;, by sampling at the same time as rest of the GP model is too computationally demanding. Instead here they are estimated by Regularised Maximum Marginal Likelihood, and point estimates are passed as parameters the rest of the model (as described [here](https://betanalpha.github.io/assets/case_studies/gp_part2/part2.html#3_regularized_maximum_marginal_likelihood)). Priors for the hyperparameters for the parents of each trait (*t*) are:<br>
+      &alpha;<sub>t</sub> ~ Normal(0,1)<br>
+      &rho;<sub>t</sub> ~ InvGamma(5,5)<br>
+      &sigma;<sub>t</sub> ~ HalfNormal(0,1)<br>
 		 - `k{i}-fold/{TRAIT}/{TRAIT}_opt.stan` : stan source code for model used for maximum likelihood hyperparameter estimation. For use with perturbed trait {TRAIT}, and k-fold model structure {i}.
 		  - `k{i}-fold/{TRAIT}/{TRAIT}_opt.rds` : compiled rstan model for the above.<br>
       `_pred` files : Files associated with predicted trait values upon perturbation of a trait {TRAIT}.
@@ -81,8 +81,8 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
       `trait_modification_output/graphs/`<br>
 		- `{TRAIT}_k-avg_predicted_perturbation_effect.pdf` : plots of median and 10% confidence intervals for predicted trait values when perturbed trait {TRAIT} is set to the plotted x-axis values. Results have been averaged over the five inferred DAG structures.
 		- `{TRAIT}_k-avg_predicted_perturbation_effect_back.pdf` : as above, after data is back transformed to undo transformations shown in supplemental table 2 which were applied to make traits more normally distributed.
-		- `k{i}-fold/{TRAIT}/` : results for DAG model structure $i$, when {TRAIT} is perturbed.
-			- `optimal_hyperparameters.csv` : optimal values of $\alpha$, $\sigma$, $\rho$ hyper parameters estimated by regularised maximum likelihood.
+		- `k{i}-fold/{TRAIT}/` : results for DAG model structure *i*, when {TRAIT} is perturbed.
+			- `optimal_hyperparameters.csv` : optimal values of &alpha;, &sigma;, &rho; hyper parameters estimated by regularised maximum likelihood.
 			- `fit_summary.csv` : all values sampled from posterior trait value predictions (is the same data as `TRAIT_fitted.rds`, but in .csv format).
 		- `k-averaged/{TRAIT}/` : results averaged over all five DAG structures.
 			- `avg_pred_vs_measured.pdf` : plot of observed trait values vs mean predictions from sampled posterior without trait perturbation.
@@ -93,11 +93,11 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 
 
 ### Bayesian optimisation for ideotype identification
-- **bayesian_optimisation.R** : specify a model in which seed weight is a function of its parent traits as was inferred in **Identification of trait relationship structure** as the average over the k-fold DAGs. As in **Predicting the yield consequence of modifying traits**, the ARD kernel is used, and hyperparameters $\alpha$, $\rho$, $\sigma$ are inferred by regularised maximum likelihood with priors as shown above. Ideotypes are identified by iteratively identifying the next optimal point in trait space which maximise the Expected Improvement (EI) in seed yield given the fitted GP model. At each iteration, previously identified optimal points are incorporated in the dataset following the "constant liar" heuristic, where the experimentally observed maximum yield is the substituted value. Correlations between the parent traits are accounted for by using the principle components of the trait space as input to the GP model.
+- **bayesian_optimisation.R** : specify a model in which seed weight is a function of its parent traits as was inferred in **Identification of trait relationship structure** as the average over the k-fold DAGs. As in **Predicting the yield consequence of modifying traits**, the ARD kernel is used, and hyperparameters &alpha;, &rho;, &sigma; are inferred by regularised maximum likelihood with priors as shown above. Ideotypes are identified by iteratively identifying the next optimal point in trait space which maximise the Expected Improvement (EI) in seed yield given the fitted GP model. At each iteration, previously identified optimal points are incorporated in the dataset following the "constant liar" heuristic, where the experimentally observed maximum yield is the substituted value. Correlations between the parent traits are accounted for by using the principle components of the trait space as input to the GP model.
 <br>
 	- *supporting script files*:
 		- `BO_functions.R` : utility functions used in `bayesian_optimisation.R`
-		- `BO_plot_results.R` : script to plot the output of `bayesian_optimisation.R`, which is the next $q$ proposed optimal ideotype  points experimental observations.<br>
+		- `BO_plot_results.R` : script to plot the output of `bayesian_optimisation.R`, which is the next *q* proposed optimal ideotype  points experimental observations.<br>
 	- *input*:
 		`data/BO_data/`
 		- `pred_model.stan` : stan source code for GP model, specifying that total seed weight is a GP function of the other traits passed in by `bayesian_optimisation.R`.
@@ -107,15 +107,15 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 	- *output*:
 		`BO_output/`
 		- `{ECOTYPE}_hyperparam_model/`
-			- `opt_model.stan` : stan source for model used to infer max likelihood values for GP prior hyperparameters $\alpha$, $\rho$, $\sigma$.
+			- `opt_model.stan` : stan source for model used to infer max likelihood values for GP prior hyperparameters &alpha;, &rho;, &sigma;.
 			-	`opt_model.rds` : rstan compiled model of the above
 			-	`opt_hyperparams.csv` : optimal hyperparameter values identified by regularised maximum likelihood.
 		- `{ECOTYPE}_PCA_{SUFFIX}.csv` : summary table of the variance explained by principle components. Used to select the number of PCs for use.
 		- `{ECOTYPE}_stan.data_{SUFFIX}.RDS` : the data used for model fitting
-		- `{ECOTYPE}_q.values_{SUFFIX}.RDS` : the next $q$ proposed ideotype values as points in trait space.
+		- `{ECOTYPE}_q.values_{SUFFIX}.RDS` : the next *q* proposed ideotype values as points in trait space.
     <br><br><br>
 
 ### Simulation of causal SNP identification
-- **simSNP_inference.R** : Simulates linear gene-trait, and trait-trait relationships shown in Supplemental figure 6a. Infers statistical associations between simulated SNPs and traits as the strength of the trait-trait relationship ($\gamma$), and gaussian noise in the trait values is varied (to generate results shown in supplemental figure 6b).
+- **simSNP_inference.R** : Simulates linear gene-trait, and trait-trait relationships shown in Supplemental figure 6a. Infers statistical associations between simulated SNPs and traits as the strength of the trait-trait relationship (&gamma;), and gaussian noise in the trait values is varied (to generate results shown in supplemental figure 6b).
 	- *supporting script files*:
 	  - `simSNP_inference_functions.R` : utility functions for `simSNP_inference.R`.
