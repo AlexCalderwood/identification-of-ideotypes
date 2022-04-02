@@ -44,7 +44,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
     <br><br><br>
 
 
-### Predicting the yield consequence of modifying traits
+### Predicting the consequence of modifying traits on seed yield
 - **trait_modification_prediction.R** :
     - Takes the model structures inferred by **id_trait_structure.R**, uses Gaussian Processes (GP) to model the potentially non-linear relationships between the connected nodes, and predict the effects of perturbing each yield trait.
     - MCMC sampling is carried out using Stan. This script parses model structures inferred by `id_trait_structure.R`, encoded as strings in `bnlearn$model.strings` to produce `.stan` files describing the GP modelled relationships between each node and its parent traits. It calls Stan to compile and run no-U-turn MCMC sampling on these models, to learn the potentially non-linear relationships between traits, and predict trait values upon perturbation of each trait. Here example results are provided for the perturbed trait "height" (TRAIT).<br><br>
@@ -91,7 +91,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 
 
 ### Bayesian optimisation for ideotype identification
-- **bayesian_optimisation.R** : specify a model in which seed weight is a function of its parent traits as was inferred in **Identification of trait relationship structure** as the average over the k-fold DAGs. As in **Predicting the yield consequence of modifying traits**, the ARD kernel is used, and hyperparameters &alpha;, &rho;, &sigma; are inferred by regularised maximum likelihood with priors as shown above. Ideotypes are identified by iteratively identifying the next optimal point in trait space which maximise the Expected Improvement (EI) in seed yield given the fitted GP model. At each iteration, previously identified optimal points are incorporated in the dataset following the "constant liar" heuristic, where the experimentally observed maximum yield is the substituted value. Correlations between the parent traits are accounted for by using the principle components of the trait space as input to the GP model.<br><br>
+- **bayesian_optimisation.R** : specify a model in which seed weight is a function of its parent traits as was inferred in **Identification of trait relationship structure** as the average over the k-fold DAGs. As in **Predicting the consequence of modifying traits on seed yield**, the ARD kernel is used, and hyperparameters &alpha;, &rho;, &sigma; are inferred by regularised maximum likelihood with priors as shown above. Ideotypes are identified by iteratively identifying the next optimal point in trait space which maximise the Expected Improvement (EI) in seed yield given the fitted GP model. At each iteration, previously identified optimal points are incorporated in the dataset following the "constant liar" heuristic, where the experimentally observed maximum yield is the substituted value. Correlations between the parent traits are accounted for by using the principle components of the trait space as input to the GP model.<br><br>
 	- *supporting script files*:
 		- `BO_functions.R` : utility functions used in `bayesian_optimisation.R`
 		- `BO_plot_results.R` : script to plot the output of `bayesian_optimisation.R`, which is the next *q* proposed optimal ideotype  points experimental observations.<br>
@@ -112,7 +112,7 @@ Each analysis stage is carried out by a single **R script**, with *supporting sc
 		- `{ECOTYPE}_q.values_{SUFFIX}.RDS` : the next *q* proposed ideotype values as points in trait space.
     <br><br><br>
 
-### Simulation of causal SNP identification
+### Simulation of GWAS analysis for causal SNP identification
 - **simSNP_inference.R** : Simulates linear gene-trait, and trait-trait relationships shown in Supplemental figure 6a. Infers statistical associations between simulated SNPs and traits as the strength of the trait-trait relationship (&gamma;), and gaussian noise in the trait values is varied (to generate results shown in supplemental figure 6b).<br><br>
 	- *supporting script files*:
 	  - `simSNP_inference_functions.R` : utility functions for `simSNP_inference.R`.
